@@ -2,6 +2,7 @@ import sys
 import cv2
 import mediapipe as mp
 RANDOM
+Some other change from remote
 FILE = '/home/louis/Videos/2dof_ee_OA.mp4'
 PATH_TO_MODEL = '/home/louis/Github/MR_RG_code/hand_landmarker.task'
 MILLI = 1000
