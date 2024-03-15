@@ -1,81 +1,23 @@
+from scipy.linalg import expm
+from spatialmath import SE3
+from math import pi
+from spatialmath.base import trplot, tranimate, ishom
+from utils.screw_axis_math import *
 import math
 import sys
 import time
 import cv2
-from spatialmath import SE3
-from math import pi
-from spatialmath.base import trplot, tranimate, ishom
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.linalg import expm
 
 a_line = lambda x, y: np.vstack([x,y]).T
 
-def skew_beta(x, M):
-    assert x.ndim == 1
-    assert isinstance(M, np.ndarray)
-    return np.linalg.inv(M)@skew(x)@M
-
-def skew(x):
-    assert x.ndim == 1
-    if x.shape[0] == 3:
-        s = np.array([[0, -x[2], x[1]],
-                      [x[2], 0, -x[0]],
-                      [-x[1], x[0], 0]])
-    elif x.shape[0] == 6:
-        s = np.array([[0, -x[2], x[1], x[3]],
-                      [x[2], 0, -x[0], x[4]],
-                      [-x[1], x[0], 0, x[5]],
-                      [0, 0, 0, 0]])
-    else:
-        raise "x must be of shape (3,) or (6,)"
-    return s
 
 def inter():
     plt.draw()
     plt.legend()
     input()
 
-def to_SE3(omega, theta, v):
-    I = np.eye(3)
-    skew_omega = skew(omega.flatten())
-    bot = np.array([[0, 0, 0, 1]])
-
-    rot = expm(skew_omega*theta)  # Matrix exponential operator not same as **
-    assert (np.abs(rot.transpose() - np.linalg.inv(rot)) < 0.0001).all()  # Ensure we have a matrix in the SO(3)
-    G = I*theta + (1-math.cos(theta))*skew_omega + (theta - math.sin(theta))*(np.linalg.matrix_power(skew_omega,2))
-    np.power
-    transl = (G@v.transpose()).reshape(3,1)
-    return np.vstack((np.hstack((rot, transl)), bot))
-
-def get_screw_axis_revolute(s_hat, q):
-    theta_dot = 1  # angular velocity
-
-    # instantenous linear velocity. Also the translation due to rotation about s_hat.
-    # Occurs in the plane orthogonal to s_hat
-    v = -np.cross(s_hat, q)
-
-    # Calculate omega
-    omega = s_hat*theta_dot
-    omega_norm = np.linalg.norm(omega)
-
-    # Calculate h (ratio of the linear velocity along the screw axis to the angular velocity θ̇ about
-    # the screw axis)
-    if int(omega_norm) == 1:
-        # Case 1: rigid body rotation occurs
-        h = v/theta_dot
-        transl_2 = h*s_hat*theta_dot  # translation along s_hat
-        V_s = np.hstack((omega, v + transl_2)).flatten()
-        return V_s/omega_norm
-    elif abs(omega_norm) < 0.00001:
-        # Case 2: no rigid body rotation occurs
-        h = np.inf
-        transl_2 = 0
-        V_s = np.hstack((omega, v + transl_2)).flatten()
-        v_norm = np.linalg.norm(v)
-        return V_s/v_norm
-    else:
-        assert int(omega_norm) == 1 or abs(omega_norm) < 0.00001
 
 
 def cla():
